@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cotizador 3D</title>
+<style>
+:root{--bg:#f2f4f7;--card:#fff;--ink:#12151b;--mute:#667085;--line:#e3e7ee;--acc:#2f5bff;--acc-soft:#e9eeff;--c1:#2f5bff;--c2:#19b6a6;--c3:#f5a524;--c4:#e5484d;--inp:#f7f8fa;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0c0d10;--card:#15171c;--ink:#eef0f4;--mute:#8d94a3;--line:#252932;--acc:#6f8dff;--acc-soft:#1c2340;--inp:#101216;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0c0d10;--card:#15171c;--ink:#eef0f4;--mute:#8d94a3;--line:#252932;--acc:#6f8dff;--acc-soft:#1c2340;--inp:#101216;color-scheme:dark}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:28px 20px 110px}
+h1{font-size:26px;letter-spacing:-.02em;margin:0 0 4px}
+.sub{color:var(--mute);margin:0 0 24px}
+.grid{display:grid;grid-template-columns:1fr 380px;gap:20px;align-items:start}
+.stack{display:grid;gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px}
+.card h2{font-size:15px;margin:0 0 14px;font-weight:650}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+label{display:block;font-size:13px;color:var(--mute)}
+label small{display:block;font-size:12px;margin-top:4px;line-height:1.35}
+input,select{width:100%;margin-top:6px;padding:10px 12px;font:inherit;color:var(--ink);background:var(--inp);border:1px solid var(--line);border-radius:10px;outline:none;transition:border-color .15s}
+input:focus,select:focus,button:focus-visible,summary:focus-visible{border-color:var(--acc);outline:2px solid var(--acc);outline-offset:1px}
+input:disabled{opacity:.55;cursor:not-allowed}
+.row{display:flex;gap:8px;align-items:center}
+.btn{font:inherit;font-weight:600;padding:10px 14px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer;white-space:nowrap}
+.btn.p{background:var(--acc);border-color:var(--acc);color:#fff}
+.btn.d{color:var(--c4)}
+.btn:hover{filter:brightness(.96)}
+.chips{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin:6px 0 12px}
+.chip{padding:9px 0;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--ink);font:inherit;font-weight:600;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--acc);border-color:var(--acc);color:#fff}
+.res{position:sticky;top:calc(16px + env(safe-area-inset-top,0px))}
+.big{font-size:42px;line-height:1.05;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;margin:2px 0 14px}
+.bar{display:flex;height:10px;border-radius:99px;overflow:hidden;background:var(--line);margin:4px 0 14px;gap:2px}
+.bar i{display:block;min-width:0;transition:flex-grow .25s}
+.li{display:flex;justify-content:space-between;align-items:center;padding:7px 0;font-variant-numeric:tabular-nums;color:var(--mute)}
+.li b{color:var(--ink);font-weight:600}
+.li .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px}
+.li.t{border-top:1px solid var(--line);margin-top:6px;padding-top:12px;color:var(--ink)}
+.ml{margin-top:12px;padding:12px 14px;border-radius:12px;background:var(--acc-soft);display:flex;justify-content:space-between;align-items:center}
+.ml span{color:var(--mute);font-size:13px}.ml b{font-size:18px;font-variant-numeric:tabular-nums}
+details{margin-top:12px;font-size:13px;color:var(--mute)}summary{cursor:pointer;font-weight:600;color:var(--ink)}
+details p{margin:6px 0 0}
+.bottom{display:none}
+@media (max-width:860px){
+ .grid{grid-template-columns:1fr}.res{position:static;order:-1}
+ .f2{grid-template-columns:1fr}
+ .bottom{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:5;justify-content:space-between;align-items:center;padding:10px 20px calc(10px + env(safe-area-inset-bottom,0px));background:var(--card);border-top:1px solid var(--line)}
+ .bottom b{font-size:20px;font-variant-numeric:tabular-nums}.bottom span{font-size:12px;color:var(--mute);display:block}
+ .big{font-size:36px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.note{font-size:12px;color:var(--mute);margin:10px 0 0}
+textarea{width:100%;margin-top:6px;padding:10px 12px;font:inherit;font-size:13px;line-height:1.5;color:var(--ink);background:var(--inp);border:1px solid var(--line);border-radius:10px;resize:vertical;outline:none}
+#qmsg{color:var(--c4);font-size:13px;margin:8px 0 0;min-height:0}
+#quote{display:none}
+@media print{
+ @page{size:A4;margin:16mm}
+ :root{padding:0!important}
+ html,body{background:#fff!important}
+ .wrap,.bottom{display:none!important}
+ #quote{display:block;color:#111;font:13px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+ #quote .qh{display:flex;align-items:center;gap:14px;padding-bottom:16px;border-bottom:2px solid #111}
+ #quote .logo{width:52px;height:52px;display:flex;align-items:center;justify-content:center;border:1.5px solid #111;border-radius:12px}
+ #quote .logo img{max-width:100%;max-height:100%}
+ #quote .qb{flex:1}#quote .qb b{display:block;font-size:20px;letter-spacing:-.01em}#quote .qb span{color:#555}
+ #quote .qn{text-align:right}#quote .qn b{display:block;font-size:18px}#quote .qn span{display:block;color:#555}
+ #quote .qc{margin:22px 0 14px}#quote .qc span{color:#555}
+ #quote table{width:100%;border-collapse:collapse}
+ #quote th{text-align:left;font-weight:600;color:#555;padding:8px 6px;border-bottom:1px solid #bbb}
+ #quote td{padding:12px 6px;border-bottom:1px solid #ddd}
+ #quote .r{text-align:right}
+ #quote .qt{display:flex;justify-content:flex-end;gap:24px;align-items:baseline;margin-top:16px;font-size:16px}
+ #quote .qt b{font-size:24px}
+ #quote .qf{margin-top:36px;padding-top:12px;border-top:1px solid #ddd;color:#555;font-size:12px}
+ #quote .qf p{margin:0 0 4px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+ <h1>Cotizador de impresión 3D</h1>
+ <p class="sub">Calcula el costo real de cada pieza y el precio a cobrar, en pesos chilenos.</p>
+ <div class="grid">
+  <div class="stack">
+   <section class="card">
+    <h2>Perfil</h2>
+    <div class="row">
+     <select id="prof" aria-label="Perfil guardado"></select>
+     <button class="btn d" id="del" hidden>Eliminar</button>
+    </div>
+    <div class="row" style="margin-top:10px">
+     <input id="pname" placeholder="Nombre del perfil (ej: Bambu Lab A1)" hidden style="margin:0">
+     <button class="btn p" id="save" style="flex:1">Guardar perfil</button>
+    </div>
+   </section>
+   <section class="card">
+    <h2>Gastos fijos</h2>
+    <div class="f2" id="fixed"></div>
+   </section>
+   <section class="card">
+    <h2>Pieza</h2>
+    <div class="f2" id="piece"></div>
+   </section>
+  </div>
+  <aside class="res stack">
+   <section class="card">
+    <h2>Margen de ganancia</h2>
+    <div class="chips" id="chips"></div>
+    <label>Multiplicador personalizado<input id="mult" type="number" inputmode="decimal" step="any" data-s="c" data-k="mult"></label>
+    <details open><summary>Referencias</summary>
+     <p>×2 alto volumen o descuento · ×2,5 volumen medio · ×3 mayorista · ×3,5 intermedio · ×4 minorista · ×5 llaveros y piezas chicas</p>
+    </details>
+   </section>
+   <section class="card">
+    <h2>Resultado</h2>
+    <div style="color:var(--mute);font-size:13px">Total a cobrar</div>
+    <div class="big" id="total">$0</div>
+    <div class="bar" id="bar"></div>
+    <div class="li"><span><i class="dot" style="background:var(--c1)"></i>Material</span><b id="rm"></b></div>
+    <div class="li"><span><i class="dot" style="background:var(--c2)"></i>Electricidad</span><b id="re"></b></div>
+    <div class="li"><span><i class="dot" style="background:var(--c3)"></i>Desgaste de la máquina</span><b id="rw"></b></div>
+    <div class="li"><span><i class="dot" style="background:var(--c4)"></i>Margen de error</span><b id="rr"></b></div>
+    <div class="li t"><span>Costo total sin insumos</span><b id="rc"></b></div>
+    <div class="li"><span>Insumos (+30%)</span><b id="ri"></b></div>
+    <div class="ml"><span>Precio en MercadoLibre</span><b id="ml"></b></div>
+   </section>
+   <section class="card">
+    <h2>Cotización para el cliente</h2>
+    <div class="f2">
+     <label>Cliente<input data-q="client" placeholder="Nombre"></label>
+     <label>WhatsApp del cliente<input data-q="phone" inputmode="tel" placeholder="9 1234 5678"></label>
+     <label style="grid-column:1/-1">Pieza<input data-q="piece" placeholder="Ej: Casco de cosplay"></label>
+     <label>Cantidad<input type="number" min="1" value="1" data-q="qty"></label>
+     <label>Validez (días)<input type="number" min="1" value="7" data-q="days"></label>
+    </div>
+    <label style="margin-top:14px">Mensaje para el cliente<textarea id="qtxt" readonly rows="10" placeholder="Completa la pieza y los datos de impresión para ver el mensaje."></textarea></label>
+    <div class="row" style="margin-top:12px;flex-wrap:wrap"><button class="btn p" id="cp" style="flex:1 1 140px">Copiar mensaje</button><button class="btn" id="wa" style="flex:1 1 140px">Abrir en WhatsApp</button><button class="btn" id="pdf" style="flex:1 1 140px">Crear PDF</button></div>
+    <p id="qmsg" role="status"></p>
+    <p class="note">El mensaje y el PDF muestran solo el valor final: no incluyen costos, horas ni márgenes.</p>
+   </section>
+  </aside>
+ </div>
+</div>
+<div class="bottom"><div><span>Total a cobrar</span><b id="bt"></b></div><div style="text-align:right"><span>MercadoLibre</span><b id="bm" style="font-size:15px"></b></div></div>
+<div id="quote">
+ <div class="qh">
+  <div class="logo" id="qlogo"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.6" stroke-linejoin="round"><path d="M12 2.5 20 7v10l-8 4.5L4 17V7z"/><path d="M4 7l8 4.5L20 7M12 11.5v10"/></svg></div>
+  <div class="qb"><b id="qbrand"></b><span>Impresión 3D</span></div>
+  <div class="qn"><b>Cotización</b><span id="qnum"></span><span id="qdate"></span></div>
+ </div>
+ <div class="qc"><span>Cliente</span><br><b id="qcl"></b></div>
+ <table><thead><tr><th>Descripción</th><th class="r">Cant.</th><th class="r">Valor unitario</th><th class="r">Total</th></tr></thead>
+  <tbody><tr><td id="qd"></td><td class="r" id="qq"></td><td class="r" id="qu"></td><td class="r" id="qs"></td></tr></tbody></table>
+ <div class="qt"><span>Total a pagar</span><b id="qtot"></b></div>
+ <div class="qf" id="qterms"></div>
+</div>
+<script>
+const PR=[["bambu-a1","Bambu Lab A1",95],["bambu-a1-mini","Bambu Lab A1 Mini",45],["bambu-p1p","Bambu Lab P1P",80],["bambu-p1s","Bambu Lab P1S",100],["bambu-x1c","Bambu Lab X1 Carbon",120],["bambu-p2s","Bambu Lab P2S",130],["bambu-h2s","Bambu Lab H2S",210],["bambu-h2d","Bambu Lab H2D",210],["bambu-h2c","Bambu Lab H2C",210],["prusa-mk3s","Prusa MK3S+",80],["prusa-mk4","Prusa MK4",100],["ender-3-v2","Creality Ender 3 V2",110],["ender-3-s1","Creality Ender 3 S1",120],["creality-k1","Creality K1",100],["creality-k1c","Creality K1C",100],["creality-k1-max","Creality K1 Max",200],["creality-k2","Creality K2",150],["creality-k2-pro","Creality K2 Pro",180],["creality-k2-plus","Creality K2 Plus",220],["anycubic-kobra-2","Anycubic Kobra 2",75],["anycubic-vyper","Anycubic Vyper",80],["snapmaker-u1","SnapMaker U1",130],["elegoo-saturn-3","Elegoo Saturn 3 (resina)",75],["elegoo-saturn-4","Elegoo Saturn 4 (resina)",75],["voron-24-350","Voron 2.4 (350 mm DIY)",225],["custom","Otro / personalizado",null]];
+const DEF={id:"",name:"",printer:"bambu-a1",kg:25000,kwh:170,watts:95,life:4320,repair:150000,err:5};
+const PIECE={h:0,m:0,g:0,ins:0,mult:3.5};
+const $=s=>document.querySelector(s);
+const ld=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}};
+const sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+let profiles=ld("cot3d-profiles",[]),p={...DEF},c={...PIECE,...ld("cot3d-piece",{})};
+const fmt=v=>new Intl.NumberFormat("es-CL",{style:"currency",currency:"CLP",maximumFractionDigits:0}).format(v);
+const M=v=>Number.isFinite(v)?Math.min(Math.max(0,v),1e9):0;
+function inp(s,k,label,hint){return `<label>${label}<input type="number" inputmode="decimal" step="any" data-s="${s}" data-k="${k}">${hint?`<small>${hint}</small>`:""}</label>`}
+$("#fixed").innerHTML=inp("p","kg","Filamento ($/kg)")+inp("p","kwh","Electricidad ($/kWh)")+
+ `<label>Modelo de impresora<select id="printer">${PR.map(x=>`<option value="${x[0]}">${x[1]}${x[2]!=null?` (${x[2]} W)`:""}</option>`).join("")}</select><small>Completa el consumo automáticamente. Elige “Otro” para editarlo.</small></label>`+
+ inp("p","watts","Consumo promedio (W)","Promedio durante la impresión, no el peak. Si no lo sabes, ~100 W es un buen valor.")+
+ inp("p","life","Vida útil de la máquina (horas)")+inp("p","repair","Costo de repuestos ($)")+inp("p","err","Margen de error (%)");
+$("#piece").innerHTML=inp("c","h","Horas de impresión")+inp("c","m","Minutos adicionales")+inp("c","g","Gramos de filamento")+inp("c","ins","Insumos extra ($)");
+$("#chips").innerHTML=[2,2.5,3,3.5,4,5].map(x=>`<button class="chip" type="button" data-m="${x}" aria-pressed="false">×${String(x).replace(".",",")}</button>`).join("");
+function calc(){
+ const h=M(c.h)+M(c.m)/60,mat=M(c.g)/1000*M(p.kg),el=M(p.watts)/1000*h*M(p.kwh),life=M(p.life),
+ wear=(life>0?M(p.repair)/life:0)*h,sub=mat+el+wear,er=M(p.err)/100*sub,cost=sub+er,ins=1.3*M(c.ins),mu=M(c.mult);
+ return{mat,el,wear,er,cost,ins,total:cost*mu+ins,ml:cost*(mu+.8)+ins}
+}
+function render(){
+ const r=calc(),set=(i,v)=>$(i).textContent=fmt(v);
+ set("#total",r.total);set("#rm",r.mat);set("#re",r.el);set("#rw",r.wear);set("#rr",r.er);set("#rc",r.cost);set("#ri",r.ins);set("#ml",r.ml);set("#bt",r.total);set("#bm",r.ml);
+ const col=["--c1","--c2","--c3","--c4"],v=[r.mat,r.el,r.wear,r.er];
+ $("#bar").innerHTML=v.map((x,i)=>`<i style="flex-grow:${x>0?x:0};background:var(${col[i]})"></i>`).join("");
+ document.querySelectorAll(".chip").forEach(b=>b.setAttribute("aria-pressed",String(+b.dataset.m===+c.mult)));
+ sv("cot3d-piece",c);
+}
+function fill(){
+ document.querySelectorAll("input[data-k]").forEach(i=>{const o=i.dataset.s==="p"?p:c,v=o[i.dataset.k];i.value=v?v:""});
+ $("#printer").value=p.printer;$("#prof").value=p.id;
+ $("[data-k=watts]").disabled=p.printer!=="custom";
+ $("#del").hidden=!p.id;$("#save").textContent=p.id?"Actualizar perfil":"Guardar perfil";
+ $("#pname").hidden=!!p.id&&true;if(p.id)$("#pname").value="";
+ render();
+}
+function opts(){$("#prof").innerHTML=`<option value="">Perfil nuevo</option>`+profiles.map(x=>`<option value="${x.id}">${x.name}</option>`).join("")}
+document.addEventListener("input",e=>{
+ const k=e.target.dataset&&e.target.dataset.k;if(!k)return;
+ (e.target.dataset.s==="p"?p:c)[k]=parseFloat(e.target.value)||0;
+ if(k==="mult")render();else render();
+});
+$("#printer").onchange=e=>{p.printer=e.target.value;const x=PR.find(a=>a[0]===p.printer);if(x&&x[2]!=null)p.watts=x[2];fill()};
+$("#chips").onclick=e=>{const b=e.target.closest(".chip");if(!b)return;c.mult=+b.dataset.m;$("#mult").value=c.mult;render()};
+$("#prof").onchange=e=>{const x=profiles.find(a=>a.id===e.target.value);p=x?{...x}:{...DEF};$("#pname").value="";fill()};
+$("#save").onclick=()=>{
+ if(!p.id){
+  const n=$("#pname");
+  if(n.hidden){n.hidden=false;n.focus();return}
+  if(!n.value.trim()){n.focus();return}
+  p.id="p"+Date.now();p.name=n.value.trim();profiles.unshift({...p});
+ }else{profiles=profiles.map(x=>x.id===p.id?{...p}:x)}
+ sv("cot3d-profiles",profiles);opts();fill();
+ const b=$("#save"),t=b.textContent;b.textContent="Guardado";setTimeout(()=>b.textContent=p.id?"Actualizar perfil":"Guardar perfil",1500);
+};
+let armed=0;
+$("#del").onclick=()=>{
+ const b=$("#del");
+ if(!armed){armed=1;b.textContent="¿Seguro?";setTimeout(()=>{armed=0;b.textContent="Eliminar"},3000);return}
+ profiles=profiles.filter(x=>x.id!==p.id);sv("cot3d-profiles",profiles);p={...DEF};armed=0;b.textContent="Eliminar";opts();fill();
+};
+/* Personaliza aquí: nombre del negocio, logo (URL o data URI de imagen) y condiciones del PDF */
+const BRAND="Nombre de tu negocio",LOGO="";
+const TERMS=["Valores expresados en pesos chilenos (CLP).","Plazo de entrega y forma de pago a convenir."];
+const q={client:"",phone:"",piece:"",qty:1,days:7};
+document.addEventListener("input",e=>{const k=e.target.dataset&&e.target.dataset.q;if(k)q[k]=e.target.value});
+function qdata(){
+ const unit=Math.round(calc().total),qty=Math.max(1,parseInt(q.qty)||1),days=Math.max(1,parseInt(q.days)||7);
+ return{unit,qty,days,total:unit*qty,piece:q.piece.trim(),client:q.client.trim()};
+}
+function qcheck(d){
+ const m=$("#qmsg");
+ if(!d.piece){m.textContent="Escribe el nombre de la pieza.";return false}
+ if(d.unit<=0){m.textContent="Ingresa los datos de la pieza para calcular el precio.";return false}
+ m.textContent="";return true;
+}
+function buildMsg(d){
+ const L=[];
+ L.push(`Hola${d.client?" "+d.client:""} 👋 ¡Gracias por tu interés!`,"","Aquí tienes tu cotización:","");
+ L.push(`🧾 *Pieza:* ${d.piece}`);
+ if(d.qty>1){L.push(`📦 *Cantidad:* ${d.qty}`,`💵 *Valor unitario:* ${fmt(d.unit)}`)}
+ L.push(`✅ *Total:* ${fmt(d.total)}`,"");
+ L.push(`📅 Cotización válida por ${d.days} días.`,"Valores en pesos chilenos (CLP).","");
+ L.push("Si quieres avanzar o ajustar algo, escríbeme por aquí y lo coordinamos. ¡Quedo atento! 🙌",`— ${BRAND}`);
+ return L.join("\n");
+}
+$("#pdf").onclick=()=>{
+ const d=qdata();if(!qcheck(d))return;
+ let n=1;try{n=(+localStorage.getItem("cot3d-n")||0)+1;localStorage.setItem("cot3d-n",n)}catch(e){}
+ const now=new Date(),ymd=now.getFullYear()+String(now.getMonth()+1).padStart(2,"0")+String(now.getDate()).padStart(2,"0");
+ $("#qbrand").textContent=BRAND;
+ if(LOGO)$("#qlogo").innerHTML=`<img src="${LOGO}" alt="">`;
+ $("#qnum").textContent="N° COT-"+ymd+"-"+String(n).padStart(3,"0");
+ $("#qdate").textContent=now.toLocaleDateString("es-CL",{day:"numeric",month:"long",year:"numeric"});
+ $("#qcl").textContent=d.client||"—";
+ $("#qd").textContent=d.piece;$("#qq").textContent=d.qty;$("#qu").textContent=fmt(d.unit);$("#qs").textContent=fmt(d.total);$("#qtot").textContent=fmt(d.total);
+ $("#qterms").innerHTML=`<p>Cotización válida por ${d.days} días desde la fecha de emisión.</p>`+TERMS.map(t=>`<p>${t}</p>`).join("");
+ try{window.print()}catch(e){$("#qmsg").textContent="No se pudo abrir la impresión. Abre la página en una pestaña propia e inténtalo de nuevo."}
+};
+function upd(){const d=qdata();$("#qtxt").value=d.piece&&d.unit>0?buildMsg(d):""}
+render=(f=>()=>{f();upd()})(render);
+document.addEventListener("input",e=>{if(e.target.dataset&&e.target.dataset.q)upd()});
+$("#cp").onclick=()=>{
+ const d=qdata();if(!qcheck(d))return;
+ const t=$("#qtxt"),m=$("#qmsg");t.value=buildMsg(d);
+ const ok=()=>{m.style.color="var(--c2)";m.textContent="Mensaje copiado.";setTimeout(()=>{m.textContent="";m.style.color=""},2000)};
+ const fb=()=>{t.removeAttribute("readonly");t.select();let r=false;try{r=document.execCommand("copy")}catch(e){}t.setAttribute("readonly","");if(r)ok();else m.textContent="No se pudo copiar solo. Selecciona el mensaje y cópialo a mano."};
+ if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t.value).then(ok,fb);else fb();
+};
+$("#wa").onclick=()=>{
+ const d=qdata();if(!qcheck(d))return;
+ let n=q.phone.replace(/\D/g,"");if(n.length===9&&n[0]==="9")n="56"+n;
+ if(!/^569\d{8}$/.test(n)){$("#qmsg").textContent="Ingresa un celular chileno válido (9 dígitos, ej: 9 1234 5678) o usa Copiar mensaje.";return}
+ window.open("https://wa.me/"+n+"?text="+encodeURIComponent(buildMsg(d)),"_blank","noopener");
+};
+opts();fill();
+</script>
+</body>
+</html>
