@@ -274,7 +274,7 @@ $("#wa").onclick=()=>{
  const d=qdata();if(!qcheck(d))return;
  let n=q.phone.replace(/\D/g,"");if(n.length===9&&n[0]==="9")n="56"+n;
  if(!/^569\d{8}$/.test(n)){$("#qmsg").textContent="Ingresa un celular chileno válido (9 dígitos, ej: 9 1234 5678) o usa Copiar mensaje.";return}
- window.open("https://wa.me/"+n+"?text="+encodeURIComponent(buildMsg(d)),"_blank","noopener");
+  window.open("https://web.whatsapp.com/send?phone="+n+"&text="+encodeURIComponent(buildMsg(d)),"_blank","noopener");
 };
 opts();fill();
 </script>
